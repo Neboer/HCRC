@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>您好，{{ info.name }}</title>
+    <script src="static/jquery-3.4.1.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="static/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="static/general.css" type="text/css">
+</head>
+<style>
+    .disabled {
+        pointer-events: all !important;
+    }
+</style>
+<body>
+<div class="banner">Welcome To Corona Server</div>
+<div class="alert alert-success {% if not user_information %} d-none {% endif %}" id="message">
+    {{ user_information }}
+</div>
+<div class="center border border-info">
+    <div class="greater">您好，{{ info.name }}！</div>
+    <div class="greater">您的player id为{{ info.index }}！</div>
+    <div class="greater">帐号注册于{{ info.create_time }}</div>
+    <div class="greater">您的邀请人是{{ info.invitor_name }}</div>
+    <div class="w-75 m-auto">
+        <span>邀请码</span>
+        {% for invitation in info.invitation %}
+            <div class="d-inline-block" data-toggle="tooltip" data-placement="top"
+                    {% if invitation[1] %}
+                 title="{{ invitation[1] }}"
+                    {% else %}
+                 title="点击以复制"
+                    {% endif %}>
+                <button class="btn btn-secondary" {% if invitation[1] %}style="pointer-events: none"
+                        disabled{% endif %}>
+                    {{ invitation[0] }}
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+    <a class="greater btn btn-dark" href="/logout">注销</a>
+    <a class="greater btn btn-danger" href="/change_password">修改密码</a>
+
+</div>
+</body>
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+</html>

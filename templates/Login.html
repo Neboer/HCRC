@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ operation }}</title>
+    <script src="static/jquery-3.4.1.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <link rel="stylesheet" href="static/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="static/general.css" type="text/css">
+</head>
+
+
+<body>
+<div class="banner">Welcome To Corona Server</div>
+<div class="alert alert-danger {% if not err %} d-none {% endif %}" id="error">
+    <strong>{{ operation }}失败</strong> {{ err }}
+</div>
+<div class="center">
+    <h1>{{ operation }}</h1>
+    <form method="post"
+          action="{% if operation == '登录' %}/login{% elif operation == '注册' %}/register{% else %}/change_password{% endif %}">
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" class="form-control" id="username" {% if operation != '修改密码' %}
+                   name="username" {% else %} value="{{ user_change_password }}" readonly {% endif %}>
+        </div>
+
+        {% if operation == '修改密码' %}
+            <div class="form-group">
+                <label for="original_password">原密码</label>
+                <input type="password" class="form-control" id="original_password" name="original_password">
+            </div>
+        {% endif %}
+        <div class="form-group">
+            <label for="password">{% if operation == '修改密码' %}新{% endif %}密码</label>
+            <input type="password" class="form-control" id="password" name="password">
+        </div>
+        {% if operation == '注册' or operation == '修改密码' %}
+            <div class="form-group">
+                <label for="confirm">确认{% if operation == '修改密码' %}新{% endif %}密码</label>
+                <input type="password" class="form-control" id="confirm">
+            </div>
+        {% endif %}
+        {% if operation == '注册' %}
+            <div class="form-group">
+                <label for="invite_code">邀请码</label>
+                <input type="text" class="form-control" id="invite_code" name="invite_code">
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary greater">{{ operation }}</button>
+    </form>
+</div>
+</body>
+</html>
