@@ -106,7 +106,7 @@ def register():
             else:
                 invitor, usage, index = query_invitation_code(cursor, invitation_code)
                 if invitor and not usage:
-                    add_result = add_user_to_server(username, password, invitor)
+                    add_result = add_user_to_server(username, password)
                     if add_result:
                         create_new_user(cursor, db, username, password, invitor, index)
                         player_already_added = get_user(cursor, username)
