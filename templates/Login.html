@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="static/bootstrap.min.css" type="text/css">
     <link rel="stylesheet" href="static/general.css" type="text/css">
 </head>
-
-
 <body>
 <div class="banner">Welcome To Corona Server</div>
 <div class="alert alert-danger {% if not err %} d-none {% endif %}" id="error">
@@ -18,38 +16,93 @@
 </div>
 <div class="center">
     <h1>{{ operation }}</h1>
-    <form method="post"
+    <form method="post" class="needs-validation" novalidate
           action="{% if operation == '登录' %}/login{% elif operation == '注册' %}/register{% else %}/change_password{% endif %}">
         <div class="form-group">
             <label for="username">用户名</label>
             <input type="text" class="form-control" id="username" {% if operation != '修改密码' %}
-                   name="username" {% else %} value="{{ user_change_password }}" readonly {% endif %}>
+                   name="username" {% else %} value="{{ user_change_password }}" readonly {% endif %} required>
         </div>
-
+        {% if operation == '注册' %}
+            <small id="passwordHelpBlock" class="form-text text-muted">
+                用户名理论上可以包含任何字符，但是不可以留空，且用户名是唯一的不能与其他人重复。请不要在用户名中包含不合适的字或词语。
+            </small>
+        {% endif %}
         {% if operation == '修改密码' %}
             <div class="form-group">
                 <label for="original_password">原密码</label>
-                <input type="password" class="form-control" id="original_password" name="original_password">
+                <input type="password" class="form-control" id="original_password" name="original_password" required>
             </div>
         {% endif %}
         <div class="form-group">
             <label for="password">{% if operation == '修改密码' %}新{% endif %}密码</label>
-            <input type="password" class="form-control" id="password" name="password">
+            <input type="password" class="form-control" id="password" name="password" required pattern="[1-9a-i]{6,16}">
+            <small id="password-hint" class="form-text invalid-feedback">
+                密码只能包含1-9、a-i的字符，并且长度务必在6-16位之间。
+            </small>
         </div>
         {% if operation == '注册' or operation == '修改密码' %}
             <div class="form-group">
-                <label for="confirm">确认{% if operation == '修改密码' %}新{% endif %}密码</label>
-                <input type="password" class="form-control" id="confirm">
+                <label for="confirm_password">确认新密码</label>
+                <input type="password" class="form-control " id="confirm_password" required>
+                <small id="confirm_hint" class="form-text d-none" style="color: red">
+                    两次密码输入不一致
+                </small>
             </div>
         {% endif %}
         {% if operation == '注册' %}
             <div class="form-group">
                 <label for="invite_code">邀请码</label>
-                <input type="text" class="form-control" id="invite_code" name="invite_code">
+                <input type="text" class="form-control" id="invite_code" name="invite_code" required>
+
             </div>
         {% endif %}
         <button type="submit" class="btn btn-primary greater">{{ operation }}</button>
     </form>
 </div>
 </body>
+<script>
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+        {% if operation == '修改密码' or operation == '注册' %}
+            let confirm_password_element = $('#confirm_password');
+            let confirm_hint_element = $('#confirm_hint');
+            let password_element = $('#password');
+            $('#password, #confirm_password').on('keyup', function () {
+                if (password_element.val() === confirm_password_element.val()) {
+                    if (confirm_password_element.hasClass('is-invalid')) {
+                        confirm_password_element.removeClass('is-invalid');
+                    }
+                    confirm_password_element.addClass('is-valid');
+                    if (!confirm_hint_element.hasClass('d-none')) {
+                        confirm_hint_element.addClass('d-none');
+                    }
+                } else {
+                    if (confirm_password_element.hasClass('is-valid')) {
+                        confirm_password_element.removeClass('is-valid');
+                    }
+                    confirm_password_element.addClass('is-invalid');
+                    if (confirm_hint_element.hasClass('d-none')) {
+                        confirm_hint_element.removeClass('d-none');
+                    }
+                }
+
+            });
+        {% endif %}
+    })();
+</script>
 </html>
