@@ -41,7 +41,7 @@ def login_page():
     db = get_db()
     cursor = db.cursor()
     if 'username' in session:
-        user = get_user(cursor, session.get('username'))
+        user = get_user_from_local(cursor, session.get('username'))
         return render_template('User.html', info=user)
     else:
         return render_template('Login.html', operation="登录")
@@ -55,7 +55,7 @@ def login():
     password = request.form['password']
     if validate_exist_username(username) and validate_password_string(password):
         # 先在本地查找一下用户，如果找到了，就是血赚。
-        user_info = get_user(cursor, username)
+        user_info = get_user_from_local(cursor, username)
         if user_info:
             if password == user_info.password:
                 session['username'] = username
@@ -67,7 +67,9 @@ def login():
             user_info = check_user_from_server(username, password)
             # 服务器上有这个用户，但是本地数据库里没有，说明数据库内容不全，需要写。
             if user_info:
-                create_new_user(cursor, db, username, password, "Admin", 0)
+                create_new_user(cursor, db, username, password, "Admin", 0, force=True)
+                user_info = get_user_from_local(cursor, username)
+                # return render_template('User.html', user_information='登录成功', info=user_info)
         if user_info:
             # 登陆成功，立刻set cookie
             session['username'] = username
@@ -104,12 +106,12 @@ def register():
             if not validate_invite_code(invitation_code):
                 error_message = "邀请码不存在"
             else:
-                invitor, usage, index = query_invitation_code(cursor, invitation_code)
+                invitor, usage = query_invitation_code(cursor, invitation_code)
                 if invitor and not usage:
                     add_result = add_user_to_server(username, password)
                     if add_result:
-                        create_new_user(cursor, db, username, password, invitor, index)
-                        player_already_added = get_user(cursor, username)
+                        create_new_user(cursor, db, username, password, invitor, invitation_code)
+                        player_already_added = get_user_from_local(cursor, username)
                         return render_template('User.html', info=player_already_added, user_information='注册成功')
                     else:
                         error_message = "服务端错误"
@@ -131,41 +133,42 @@ def change_password_page():
 def change_password():
     db = get_db()
     cursor = db.cursor()
-    username = session.get('username')
-    if not username:
-        return render_template('Login.html', operation="登录")
+    if 'username' in session:
+        username = session.get('username')
     else:
-        original_password = request.form['original_password']
-        new_password = request.form['password']
-        if validate_password_string(new_password) and validate_password_string(original_password):
-            real_user = get_user(cursor, username)
-            if not real_user:
-                # 其实这个不太可能了。但是……万一呢？
-                result = change_user_password_from_server(username, original_password, new_password)
-                if result:
-                    create_new_user(cursor, db, username, new_password, "Admin", 0)
-                    user = get_user(cursor, username)
+        return render_template('Login.html', operation="登录")
+    original_password = request.form['original_password']
+    new_password = request.form['password']
+    if validate_password_string(new_password) and validate_password_string(original_password):
+        real_user = get_user_from_local(cursor, username)
+        if not real_user:
+            # 其实这个不太可能了。但是……万一呢？
+            result = change_user_password_from_server(username, original_password, new_password)
+            if result:
+                create_new_user(cursor, db, username, new_password, "Admin", 0, force=True)
+                user = get_user_from_local(cursor, username)
+                return render_template('User.html', user_information="修改密码成功", info=user)
+            else:
+                return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误")
+        else:
+            if original_password == real_user.password:
+                if change_user_password_from_server(username, original_password, new_password):
+                    change_password_from_local_db(cursor, db, username, new_password)
+                    user = get_user_from_local(cursor, username)
                     return render_template('User.html', user_information="修改密码成功", info=user)
                 else:
-                    return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误")
+                    return render_template('Login.html', operation="修改密码", user_change_password=username,
+                                           err="密码错误")
             else:
-                if original_password == real_user.password:
-                    if change_user_password_from_server(username, original_password, new_password):
-                        change_password_from_local_db(cursor, db, username, new_password)
-                        user = get_user(cursor, username)
-                        return render_template('User.html', user_information="修改密码成功", info=user)
-                    else:
-                        return render_template('Login.html', operation="修改密码", user_change_password=username,
-                                               err="服务器错误")
-                else:
-                    return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误")
-        else:
-            return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码格式错误")
+                return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误")
+    else:
+        return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码格式错误")
 
 
 @app.route('/logout', methods=['GET'])
 def log_out():
-    session.pop('username')
+    if 'username' in session:
+        session.pop('username')
     return redirect('/')
 # @app.route('/captcha', methods=['GET'])
 # def captcha():

@@ -1,11 +1,11 @@
 import re
-from database import get_user
+from database import get_user_from_local
 from communication import get_user_list_from_server
 
 
 def validate_new_username(username_string, cursor):
     if len(username_string) > 0:
-        if get_user(cursor, username_string) or username_string in get_user_list_from_server():
+        if get_user_from_local(cursor, username_string) or username_string in get_user_list_from_server():
             return -1  # -1 代表用户已经被注册了。
         else:
             return 0  # 0 用户没有被注册
