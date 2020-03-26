@@ -3,18 +3,6 @@ from datetime import datetime
 from player import Player
 
 
-# def _query_one_invitation_code(cursor, code_str, index):
-#     code_index = str(index)
-#     cursor.execute(f"SELECT username FROM players WHERE code{code_index}=?", (code_str,))
-#     username_con = cursor.fetchone()
-#     if username_con:
-#         cursor.execute(f"SELECT code{code_index}_used FROM players WHERE username=?", (username_con[0],))
-#         invitation_con = cursor.fetchone()
-#         return username_con[0], invitation_con[0]
-#     else:
-#         return None, None
-
-
 # 检测用户输入的邀请码是否存在、是否已被使用，返回有此邀请码的用户和用此邀请码注册的人。
 def query_invitation_code(cursor, code_str):
     cursor.execute("SELECT generate_user_name, used_user_name FROM invite_codes WHERE code=?", (code_str,))
@@ -41,24 +29,12 @@ def generate_invitation_code_list(cursor, count=3):
     return invitation_code_list
 
 
-# def _create_new_user_bk(cursor, db, username, password, invitor, invitor_code_index):
-#     current_timestamp = int(datetime.now().timestamp())
-#     invitation_code_list = tuple(generate_invitation_code_list(cursor))
-#     cursor.execute(
-#         "INSERT INTO players (username, password, register_timestamp, invitor, code1, code2,\
-#          code3) VALUES (?, ?, ?, ?, ?, ?, ?)",
-#         (username, password, current_timestamp, invitor,) + invitation_code_list)
-#     if invitor != "Admin":
-#         cursor.execute(
-#             f"UPDATE players SET code{invitor_code_index}_used=? WHERE username=?", (username, invitor,))
-#     db.commit()
-
-
 def create_new_user(cursor, db, username, password, invitor, invitor_code, force=False):
     current_timestamp = int(datetime.now().timestamp())
     invitation_code_list = generate_invitation_code_list(cursor)
-    cursor.execute("INSERT INTO new_players (player_name, password, register_timestamp, invitor_username) VALUES (?,?,?,?)",
-                   (username, password, current_timestamp, invitor))
+    cursor.execute(
+        "INSERT INTO new_players (player_name, password, register_timestamp, invitor_username) VALUES (?,?,?,?)",
+        (username, password, current_timestamp, invitor))
     cursor.executemany("INSERT INTO invite_codes (code, generate_user_name) VALUES (?,?)",
                        [(code, username) for code in invitation_code_list])
     if not force:
