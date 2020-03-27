@@ -1,7 +1,7 @@
-from flask import Flask, request, render_template, make_response, session, g, redirect
+from flask import Flask, request, render_template, session, g, redirect
 from communication import *
 from database import *
-from validate import pre_validate_request, ValidateError
+from validate import pre_validate_request
 import sqlite3
 from captcha_generate import captcha_response
 from os import urandom

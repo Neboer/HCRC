@@ -6,7 +6,7 @@ import string, random
 
 def _random_string(stringLength):
     """Generate a random string of fixed length """
-    letters = string.ascii_lowercase + string.digits
+    letters = 'acdefghjkmnprstuwxy1345678'
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 
