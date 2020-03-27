@@ -17,7 +17,7 @@ Corona Minecraft Server
                 <div id="buttons" class="mdui-row">
                     <div class="mdui-col-xs-4 mdui-col-offset-xs-4">
                         <div class="row mdui-valign">
-                            <div class="mdui-col-xs-5 center">
+                            <div class="mdui-col-xl-5 mdui-col-sm-8 center">
                                 <a
                                     class="mdui-btn mdui-color-green mdui-text-color-white float-left"
                                     href="login">
@@ -37,10 +37,10 @@ Corona Minecraft Server
         <div class="mdui-row mt-3">
             <div class="mdui-col-xs-6 offset-3">
                 <div class="mdui-row">
-                    <div class="mdui-col-xs-4">
+                    <div class="mdui-col-xs-4 icon">
                         <i class="mdui-icon material-icons" style="font-size: 200px">view_list</i>
                     </div>
-                    <div class="mdui-col-xs-8 mt-4">
+                    <div class="mdui-col-md-8 mdui-col-sm-12 mt-4">
                         <div class="row mdui-typo-headline">
                             超强性能
                         </div>
@@ -50,10 +50,10 @@ Corona Minecraft Server
                     </div>
                 </div>
                 <div class="mdui-row">
-                    <div class="mdui-col-xs-4">
+                    <div class="mdui-col-xs-4 icon">
                         <i class="mdui-icon material-icons" style="font-size: 200px">school</i>
                     </div>
-                    <div class="mdui-col-xs-8 mt-4">
+                    <div class="mdui-col-md-8 mdui-col-sm-12 mt-4">
                         <div class="row mdui-typo-headline">
                             专业维护
                         </div>
@@ -63,10 +63,10 @@ Corona Minecraft Server
                     </div>
                 </div>
                 <div class="mdui-row">
-                    <div class="mdui-col-xs-4">
-                        <i class="mdui-icon material-icons" style="font-size: 200px">sentiment_very_satisfied</i>
+                    <div class="mdui-col-xs-4 icon">
+                        <i class="mdui-icon material-icons i" style="font-size: 200px">sentiment_very_satisfied</i>
                     </div>
-                    <div class="mdui-col-xs-8 mt-4">
+                    <div class="mdui-col-md-8 mdui-col-sm-12 mt-4">
                         <div class="row mdui-typo-headline">
                             专业开发
                         </div>
@@ -99,11 +99,17 @@ Corona Minecraft Server
             background-image: url("https://s1.ax1x.com/2020/03/27/GPZEbd.jpg");
             background-repeat: no-repeat;
             background-blend-mode: lighten;
-            background-size: 100%, 100%;
             background-position: bottom;
+            background-size:cover
         }
         #headline{
             margin-top: 80px;
+        }
+
+        @media screen and (max-width: 1000px) {
+            .icon{
+                display: none;
+            }
         }
     </style>
 {% endblock %}
