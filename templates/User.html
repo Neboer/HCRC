@@ -1,65 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>您好，{{ info.name }}</title>
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-            crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-            crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
-    <link rel="stylesheet" href="static/general.css" type="text/css">
-</head>
-<style>
-    .disabled {
-        pointer-events: all !important;
-    }
-</style>
-<body>
-<div class="banner">Welcome To Corona Server</div>
-<a class="col" href="/">
-    返回主页
-</a>
-<div class="alert alert-success {% if not user_information %} d-none {% endif %}" id="message">
-    {{ user_information }}
-</div>
-<div class="center border border-info">
-    <div class="greater">您好，{{ info.name }}！</div>
-    <div class="greater">您的player id为{{ info.index }}</div>
-    <div class="greater">帐号注册于{{ info.create_time }}</div>
-    <div class="greater">您的邀请人是{{ info.invitor_name }}</div>
-    <div class="greater">
-{#     w-75 m-auto#}
-        <span>邀请码</span>
-        {% for invitation in info.invitation %}
-            <div class="d-inline-block clip" data-toggle="tooltip" data-placement="top"
-                    {% if invitation[1] %}
-                 title="{{ invitation[1] }}"
-                    {% else %}
-                 title="点击以复制" data-clipboard-text="{{ invitation[0] }}"
-                    {% endif %}>
-                <button class="btn btn-secondary" {% if invitation[1] %}style="pointer-events: none"
-                        disabled{% endif %}>
-                    {{ invitation[0] }}
-                </button>
-            </div>
-        {% endfor %}
+{% extends "App.html" %}
+
+{% block title %}
+    用户界面
+{% endblock %}
+{% block content %}
+    <div class="alert alert-success {% if not user_information %} d-none {% endif %}" id="message">
+        {{ user_information }}
     </div>
-    <a class="greater btn btn-dark" href="/logout">注销</a>
-    <a class="greater btn btn-danger" href="/change_password">修改密码</a>
-</div>
-</body>
-<script>
+    <div class="center border border-info">
+        <div class="greater">您好，{{ info.name }}！</div>
+        <div class="greater">您的player id为{{ info.index }}</div>
+        <div class="greater">帐号注册于{{ info.create_time }}</div>
+        <div class="greater">您的邀请人是{{ info.invitor_name }}</div>
+        <div class="greater">
+    {#     w-75 m-auto#}
+            <span>邀请码</span>
+            {% for invitation in info.invitation %}
+                <div class="d-inline-block clip" data-toggle="tooltip" data-placement="top"
+                        {% if invitation[1] %}
+                     title="{{ invitation[1] }}"
+                        {% else %}
+                     title="点击以复制" data-clipboard-text="{{ invitation[0] }}"
+                        {% endif %}>
+                    <button class="btn btn-secondary" {% if invitation[1] %}style="pointer-events: none"
+                            disabled{% endif %}>
+                        {{ invitation[0] }}
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        <a class="greater btn btn-dark" href="/logout">注销</a>
+        <a class="greater btn btn-danger" href="/change_password">修改密码</a>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
         new ClipboardJS('.clip');
     })
 </script>
-</html>
+{% endblock %}
+{% block style %}
+    <style>
+        .disabled {
+            pointer-events: all !important;
+        }
+    </style>
+{% endblock %}
