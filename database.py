@@ -1,8 +1,12 @@
-import sqlite3, random, string
-from datetime import datetime
-from player import Player
+import random
 import socket
+import string
 import struct
+from datetime import datetime
+
+from communication import give_kit
+from config import award
+from player import Player
 
 
 def ip2int(addr):
@@ -54,7 +58,9 @@ def create_new_user(cursor, db, username, password, invitor, invitor_code, phone
 
 
 def get_user_from_local(cursor, username):
-    cursor.execute("SELECT player_id, player_name, password, register_timestamp, invitor_username FROM new_players WHERE player_name=?", (username,))
+    cursor.execute(
+        "SELECT player_id, player_name, password, register_timestamp, invitor_username FROM new_players WHERE player_name=?",
+        (username,))
     user_tuple = cursor.fetchone()
     if user_tuple:
         cursor.execute("SELECT code, used_user_name FROM invite_codes WHERE generate_user_name=?", (username,))
@@ -96,3 +102,10 @@ def get_ip_sms_time_from_db(cursor, ip_addr_string):
         return datetime.fromtimestamp(result[0])
     else:
         return False
+
+
+def give_kit_to_invitor(cursor, username):
+    cursor.execute('select count(*) from new_players where invitor_username = ?', (username,))
+    result = cursor.fetchone()
+    award_name = award[int(result[0])]
+    give_kit(username, award_name)

@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+
 from config import captcha_letters
 
 
@@ -20,7 +21,7 @@ def pre_validate_request(operation, request, session):
     # pre对象有什么意义呢？pre用来在用户的输入犯小错误的情况下，再次生成的页面里涵盖之前用户输入过的信息，起到一个方便用户的作用。
     dialect = {
         "登录": ('username', 'password', 'captcha'),
-        "注册": ('username', 'password', 'invite_code', 'captcha', 'phone', 'code'),
+        "注册": ('username', 'password', 'invite_code', 'phone', 'code'),
         "修改密码": ('original_password', 'password', 'captcha')
     }
     form = request.form

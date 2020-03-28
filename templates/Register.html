@@ -1,0 +1,111 @@
+{% extends "PasswordPage.html" %}
+{% block title %}
+    注册
+{% endblock %}
+{% block headline %}注册{% endblock %}
+{% block addition %}
+    <div class="mdui-row-gapless mdui-row">
+        <div class="mdui-col-xs-12">
+            <div class="mdui-textfield">
+                <label class="mdui-textfield-label" for="confirm_password">请确认密码</label>
+                <input value="{{ pre.password }}" id="confirm_password" class="mdui-textfield-input" type="password"
+                       pattern="[1-9a-i]{6,16}" required/>
+                <div class="mdui-textfield-error">你这是什么奇怪的密码</div>
+            </div>
+        </div>
+    </div>
+    <div class="mdui-row-gapless mdui-row mdui-valign">
+        <div class="mdui-col-xs-12 mdui-textfield">
+            <label class="mdui-textfield-label" for="phone">请输入手机号</label>
+            <input value="{{ pre.phone }}" name="phone" id="phone" class="mdui-textfield-input"
+                   pattern="^1([34578])\d{9}$" type="text" required/>
+            <div class="mdui-textfield-error">你这是什么奇怪的手机号</div>
+        </div>
+    </div>
+    <div class="mdui-row-gapless mdui-row mdui-valign">
+        <div class="mdui-col-xs-8 mdui-textfield">
+            <label class="mdui-textfield-label" for="code">请输入手机验证码</label>
+            <input value="{{ pre.code }}" name="code" id="code" class="mdui-textfield-input" pattern="^[0-9]{6}$"
+                   type="text" required/>
+            <div class="mdui-textfield-error">你这是什么奇怪的邀请码</div>
+        </div>
+        <div class="mdui-col-xs-4">
+            <button
+                    type="button"
+                    class="mdui-btn mdui-btn-raised mdui-ripple mdui-btn-bold mdui-btn-block mdui-color-black"
+                    style="height: 100%"
+                    mdui-dialog="{target: '#human_verification'}">
+                获取
+            </button>
+        </div>
+    </div>
+    <div class="mdui-row-gapless mdui-row">
+        <div class="mdui-col-xs-8 mdui-textfield">
+            <label class="mdui-textfield-label" for="invite_code">请输入邀请码</label>
+            <input value="{{ pre.invite_code }}" name="invite_code" id="invite_code" class="mdui-textfield-input"
+                   type="text" required/>
+            <div class="mdui-textfield-error">你这是什么奇怪的邀请码</div>
+        </div>
+    </div>
+    <div id="human_verification" class="mdui-dialog">
+        <div class="mdui-dialog-content">
+            <div class="mdui-col-xs-8 mdui-textfield">
+                <label class="mdui-textfield-label" for="captcha">请输入验证码</label>
+                <input id="captcha" class="mdui-textfield-input" type="text" required/>
+                <div class="mdui-textfield-error">你这是什么奇怪的验证码</div>
+            </div>
+            <div class="mdui-col-xs-4">
+                <img src="captcha/1" alt="验证码" onclick="update_captcha()" style="width: 100%; height: auto"
+                     id="captcha_image">
+            </div>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button type="button" class="mdui-btn mdui-color-black mdui-m-r-2" onclick="send_code()">发送</button>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    {{ super() }}
+    <script>
+
+        $(function () {
+            {% if err != None %}
+                mdui.snackbar({
+                    message: '{{ err }}'
+                });
+            {% endif %}
+        });
+
+        function show_human_verification_dialog() {
+            humanVerification.open()
+        }
+
+        function send_code() {
+            let captcha_value = $('#captcha').val();
+            if (captcha_value === '' || captcha_value === null) {
+                mdui.snackbar({
+                    message: '你还没写验证码呢'
+                });
+                return
+            }
+            let phone = $('#phone').val();
+            if (phone === '' || phone === null) {
+                mdui.snackbar({
+                    message: '你还没写手机号呢'
+                });
+                return
+            }
+            $.get(`/sms?phone=${phone}&captcha=${captcha_value}`, function (data, status) {
+                mdui.snackbar({
+                    message: '发送成功'
+                });
+                humanVerification.close()
+            }).fail(function () {
+                mdui.snackbar({
+                    message: '发送失败，是不是验证码填错了或者发送频率过高'
+                })
+            })
+        }
+    </script>
+{% endblock %}
+

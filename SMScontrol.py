@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from _SMS import get_code, send_code
-from config import SMS_active_seconds
 from uuid import uuid4
+
+from SMS import get_code, send_code
+from config import SMS_active_seconds
 
 # 短信发送功能的控制模块。
 # 这个全局变量中存储的信息如下：(uuid4,'13000000001','a14s',datetime())，第一个是每个记录独特的id。
