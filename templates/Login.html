@@ -56,6 +56,15 @@
                     <img src="captcha/1" alt="验证码" onclick="update_captcha()" id="captcha_image">
                 </div>
             </div>
+            {% if operation == '注册' %}
+                <div class="form-group">
+                    <label for="phone_code">手机验证码</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="phone_code" required>
+                        <button id="get_phone_code" class="btn btn-primary" onclick="get_code()">点击获取验证码</button>
+                    </div>
+                </div>
+            {% endif %}
             <button type="submit" class="btn btn-primary greater">{{ operation }}</button>
         </form>
     </div>
@@ -66,6 +75,9 @@
             $("#captcha_image").attr("src", function (index, currentvalue) {
                 return currentvalue + '1'
             })
+        }
+
+        function get_code() {
             console.log("2333")
         }
 
