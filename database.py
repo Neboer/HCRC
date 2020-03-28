@@ -1,6 +1,16 @@
 import sqlite3, random, string
 from datetime import datetime
 from player import Player
+import socket
+import struct
+
+
+def ip2int(addr):
+    return struct.unpack("!I", socket.inet_aton(addr))[0]
+
+
+def int2ip(addr):
+    return socket.inet_ntoa(struct.pack("!I", addr))
 
 
 # 检测用户输入的邀请码是否存在、是否已被使用，返回有此邀请码的用户和用此邀请码注册的人。
@@ -29,12 +39,13 @@ def generate_invitation_code_list(cursor, count=3):
     return invitation_code_list
 
 
-def create_new_user(cursor, db, username, password, invitor, invitor_code, force=False):
+# 珏对的核心代码，
+def create_new_user(cursor, db, username, password, invitor, invitor_code, phone_number, force=False):
     current_timestamp = int(datetime.now().timestamp())
     invitation_code_list = generate_invitation_code_list(cursor)
     cursor.execute(
-        "INSERT INTO new_players (player_name, password, register_timestamp, invitor_username) VALUES (?,?,?,?)",
-        (username, password, current_timestamp, invitor))
+        "INSERT INTO new_players (player_name, password, register_timestamp, invitor_username, phone_number) VALUES (?,?,?,?,?)",
+        (username, password, current_timestamp, invitor, phone_number))
     cursor.executemany("INSERT INTO invite_codes (code, generate_user_name) VALUES (?,?)",
                        [(code, username) for code in invitation_code_list])
     if not force:
@@ -43,7 +54,7 @@ def create_new_user(cursor, db, username, password, invitor, invitor_code, force
 
 
 def get_user_from_local(cursor, username):
-    cursor.execute("SELECT * FROM new_players WHERE player_name=?", (username,))
+    cursor.execute("SELECT player_id, player_name, password, register_timestamp, invitor_username FROM new_players WHERE player_name=?", (username,))
     user_tuple = cursor.fetchone()
     if user_tuple:
         cursor.execute("SELECT code, used_user_name FROM invite_codes WHERE generate_user_name=?", (username,))
@@ -58,3 +69,30 @@ def change_password_from_local_db(cursor, db, username, new_password):
     cursor.execute("UPDATE new_players SET password=? WHERE player_name=?", (new_password, username,))
     db.commit()
     return
+
+
+#
+def record_ip_sms_time_to_local_db(cursor, db, ip_addr_string):
+    # 为了节省空间，存入数据库的ip地址为整数。
+    ip_addr_int = ip2int(ip_addr_string)
+    current_time_int = int(datetime.now().timestamp())
+    cursor.execute("SELECT * from ip_sms_record WHERE ip_addr=?", (ip_addr_int,))
+    search_result = cursor.fetchone()
+    if search_result:
+        cursor.execute("UPDATE ip_sms_record SET last_msg_time=?, req_count=req_count+1 WHERE ip_addr=?",
+                       (current_time_int, ip_addr_int,))
+    else:
+        cursor.execute("INSERT INTO ip_sms_record (ip_addr, last_msg_time, req_count) VALUES (?,?,?)",
+                       (ip_addr_int, current_time_int, 0))
+    db.commit()
+
+
+def get_ip_sms_time_from_db(cursor, ip_addr_string):
+    # 如果成功，返回一个datetime对象，如果ip从未请求过，则返回空
+    ip_addr_int = ip2int(ip_addr_string)
+    cursor.execute("SELECT last_msg_time FROM ip_sms_record WHERE ip_addr=?", (ip_addr_int,))
+    result = cursor.fetchone()
+    if result:
+        return datetime.fromtimestamp(result[0])
+    else:
+        return False

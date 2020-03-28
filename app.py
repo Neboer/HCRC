@@ -1,10 +1,15 @@
-from flask import Flask, request, render_template, session, g, redirect
-from communication import *
+from flask import Flask, request, render_template, session, g, redirect, jsonify
+from _communication import *
 from database import *
-from validate import pre_validate_request
+from validate import pre_validate_request, pre_validate_sms_request
 import sqlite3
 from captcha_generate import captcha_response
 from os import urandom
+from datetime import datetime, timedelta
+from config import *
+from SMScontrol import SMS_go, SMS_checkout
+
+# from SMS import send_code, get_code
 
 app = Flask(__name__)
 
@@ -15,6 +20,7 @@ app = Flask(__name__)
 DATABASE = 'HCRC.sqlite'
 app.secret_key = urandom(26)
 default_pre = {'username': "", 'original_password': "", "password": "", "invite_code": ""}
+last_sms_send_time = datetime.fromtimestamp(0)
 
 
 def get_db():
@@ -86,22 +92,25 @@ def register_page():
 
 @app.route('/register', methods=['POST'])
 def register():
-    validate_result, pre = pre_validate_request("注册", request, session)
-    if validate_result:
-        return render_template('Login.html', operation="注册", err=validate_result.toStr(), pre=pre)
+    validate_error, pre = pre_validate_request("注册", request, session)
+    if validate_error:
+        return render_template('Login.html', operation="注册", err=validate_error.toStr(), pre=pre)
     db = get_db()
     cursor = db.cursor()
-    username = request.form['username']
-    password = request.form['password']
-    invitation_code = request.form['invite_code']
+    username, password, invitation_code, phone, code = request.form['username'], request.form['password'], request.form[
+        'invite_code'], request.form['phone'], request.form['code']
+    # 为了防止无效的请求妨碍正常对短信验证码的检验过程，必须注册“接近”成功，才有权利申请校验手机号。
     name_check_already_exists = bool(get_user_from_local(cursor, username)) or username in get_user_list_from_server()
     if name_check_already_exists:
         return render_template('Login.html', operation="注册", err="该用户名已经被注册", pre=pre)
     invitor, usage = query_invitation_code(cursor, invitation_code)
     if invitor and not usage:
+        # 很棒，接近成功了，校验手机号！
+        if not SMS_checkout(phone, code):
+            return render_template('Login.html', operation="注册", err="手机验证失败", pre=pre)
         add_result = add_user_to_server(username, password)
         if add_result:
-            create_new_user(cursor, db, username, password, invitor, invitation_code)
+            create_new_user(cursor, db, username, password, invitor, invitation_code, phone)
             player_already_added = get_user_from_local(cursor, username)
             session['username'] = username
             return render_template('User.html', info=player_already_added, user_information='注册成功')
@@ -163,3 +172,29 @@ def captcha(rand):
     res, ans = captcha_response()
     session['captcha'] = ans
     return res
+
+
+# 只有在注册的时候才能用到。
+# /sms?phone=13000000001&captcha=abcd
+@app.route('/sms', methods=['GET'])
+def send_sms():
+    validate = pre_validate_sms_request(request, session)
+    if validate:
+        return jsonify({'error': validate.toStr()})
+    db = get_db()
+    cursor = db.cursor()
+    user_ip = request.remote_addr
+    global last_sms_send_time
+    now = datetime.now()
+    ip_last_send_time = get_ip_sms_time_from_db(cursor, user_ip)
+    user_SMS_interval = timedelta(seconds=user_SMS_minimum_interval_seconds)
+    if ip_last_send_time and now - ip_last_send_time < user_SMS_interval:
+        return jsonify({'u_wait': (user_SMS_interval - (now - ip_last_send_time)).seconds})
+    if now - last_sms_send_time < timedelta(seconds=global_SMS_minimum_interval_seconds):
+        differ = timedelta(seconds=global_SMS_minimum_interval_seconds) - (now - last_sms_send_time)
+        return jsonify({'g_wait': differ.total_seconds()})
+    # 没有问题，准备发短信！
+    last_sms_send_time = now
+    record_ip_sms_time_to_local_db(cursor, db, user_ip)
+    SMS_go(request.args.get('phone'))
+    return jsonify({'phone': 'ok'})

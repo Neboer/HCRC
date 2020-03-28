@@ -1,13 +1,13 @@
 from captcha.image import ImageCaptcha
 from werkzeug.wsgi import FileWrapper
 from flask import Response
-import string, random
+from config import captcha_letters
+import random
 
 
 def _random_string(stringLength):
     """Generate a random string of fixed length """
-    letters = 'acdefghjkmnprstuwxy1345678'
-    return ''.join(random.choice(letters) for i in range(stringLength))
+    return ''.join(random.choice(captcha_letters) for i in range(stringLength))
 
 
 def captcha_response():

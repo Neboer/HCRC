@@ -1,4 +1,4 @@
-{% extends "App.html"%}
+{% extends "App.html" %}
 {% block title %}登陆{% endblock %}
 {% block content %}
     <div class="alert alert-danger {% if not err %} d-none {% endif %}" id="error">
@@ -27,7 +27,8 @@
             {% endif %}
             <div class="form-group">
                 <label for="password">{% if operation == '修改密码' %}新{% endif %}密码</label>
-                <input type="password" class="form-control" id="password" name="password" required pattern="[1-9a-i]{6,16}"
+                <input type="password" class="form-control" id="password" name="password" required
+                       pattern="[1-9a-i]{6,16}"
                        value="{{ pre.password }}">
                 <small id="password-hint" class="form-text invalid-feedback">
                     密码只能包含1-9、a-i的字符，并且长度务必在6-16位之间。
@@ -57,6 +58,11 @@
                 </div>
             </div>
             {% if operation == '注册' %}
+                <div class="form-group">
+                    <label for="invite_code">手机号</label>
+                    <input type="text" class="form-control" id="invite_code" name="invite_code"
+                           value="{{ pre.phone }}" required>
+                </div>
                 <div class="form-group">
                     <label for="phone_code">手机验证码</label>
                     <div class="input-group">
@@ -97,6 +103,10 @@
                     }, false);
                 });
             }, false);
+            {% if operation == '注册' %}
+
+            {% endif %}
+
             {% if operation == '修改密码' or operation == '注册' %}
                 let confirm_password_element = $('#confirm_password');
                 let confirm_hint_element = $('#confirm_hint');
