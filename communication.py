@@ -46,7 +46,7 @@ def del_user_from_server(username):
 
 
 def get_user_list_from_server():
-    return [i['username'] for i in requests.get(f'{url}/user/all').json()]
+    return [i['username'] for i in requests.get(f'{url}/user/all', headers=header).json()]
 
 def give_kit(username, kit_name):
     response = requests.post(f'{url}/kit/give', params={
