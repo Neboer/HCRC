@@ -123,7 +123,7 @@ def register():
             session['username'] = username
             player_count = get_player_count_user_invited(cursor, invitor)
             award_name = award[player_count]
-            give_kit(username, award_name)
+            give_kit(invitor, award_name)
             return render_template('User.html', info=player_already_added, user_information='注册成功')
         else:
             return render_template('Register.html', err="服务器错误", pre=pre)
