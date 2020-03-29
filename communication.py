@@ -37,7 +37,7 @@ def del_user_from_server(username):
 
 
 def get_user_list_from_server():
-    return requests.get(f'{minecraft_server_address}/user/all').json()
+    return [i['username'] for i in requests.get(f'{minecraft_server_address}/user/all').json()]
 
 
 def give_kit(username, kit_name):
