@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import timedelta
 from os import urandom
 
 from flask import Flask, request, render_template, session, g, redirect, jsonify
@@ -112,6 +112,8 @@ def register():
     invitor, usage = query_invitation_code(cursor, invitation_code)
     if invitor and not usage:
         # 很棒，接近成功了，校验手机号！
+        if is_phone_exist(cursor, phone):
+            return render_template('Register.html', err="该手机号已被注册", pre=pre)
         if not SMS_checkout(phone, code):
             return render_template('Register.html', err="手机验证失败", pre=pre)
         add_result = add_user_to_server(username, password)

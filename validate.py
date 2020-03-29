@@ -46,11 +46,11 @@ def pre_validate_request(operation, request, session):
                 return error, pre
     if 'username' in session and pre['username'] == "":
         pre['username'] = session['username']
-    if 'captcha' not in session:
+    if 'captcha' not in session and operation == '登陆':
         error = ValidateError.bad_cookie
     elif operation == '修改密码' and 'username' not in session:
         error = ValidateError.bad_cookie
-    elif session['captcha'] != form['captcha']:
+    elif operation == '登陆' and session.get['captcha'] != form['captcha']:
         error = ValidateError.captcha_error
     return error, pre
 

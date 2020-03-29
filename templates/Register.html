@@ -51,7 +51,7 @@
         <div class="mdui-dialog-content">
             <div class="mdui-col-xs-8 mdui-textfield">
                 <label class="mdui-textfield-label" for="captcha">请输入验证码</label>
-                <input id="captcha" class="mdui-textfield-input" type="text" required/>
+                <input id="captcha" class="mdui-textfield-input" type="text"/>
                 <div class="mdui-textfield-error">你这是什么奇怪的验证码</div>
             </div>
             <div class="mdui-col-xs-4">
@@ -76,9 +76,6 @@
             {% endif %}
         });
 
-        function show_human_verification_dialog() {
-            humanVerification.open()
-        }
 
         function send_code() {
             let captcha_value = $('#captcha').val();
@@ -99,7 +96,6 @@
                 mdui.snackbar({
                     message: '发送成功'
                 });
-                humanVerification.close()
             }).fail(function () {
                 mdui.snackbar({
                     message: '发送失败，是不是验证码填错了或者发送频率过高'

@@ -109,3 +109,9 @@ def give_kit_to_invitor(cursor, username):
     result = cursor.fetchone()
     award_name = award[int(result[0])]
     give_kit(username, award_name)
+
+
+def is_phone_exist(cursor, phone):
+    cursor.execute('select * from new_players where phone_number = ?', (phone,))
+    result = cursor.fetchone()
+    return result is not None
