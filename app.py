@@ -71,30 +71,16 @@ def login():
     cursor = db.cursor()
     username = request.form['username']
     password = request.form['password']
-    # 先在本地查找一下用户，如果找到了，就是血赚。
-    user_info = get_user_from_local(cursor, username)
-    if user_info:
-        if password == user_info.password:
-            session['username'] = username
-            session.modified = True
-            return render_template('User.html', info=user_info, user_information='登录成功')
-        else:
-            outer_login_success = check_user_from_server(username, password)
-            if outer_login_success:
-                change_password_from_local_db(cursor, db, username, password)
-                user_info = get_user_from_local(cursor, username)
-                return render_template('User.html', user_information='登录成功', info=user_info)
-            else:
-                return render_template('Login.html', operation="登录", err='用户名或密码错误', pre=pre)
-    else:
-        outer_login_success = check_user_from_server(username, password)
-        if outer_login_success:
-            # 服务器上有这个用户，但是本地数据库里没有，说明数据库内容不全，需要写。
+
+    has_user = check_user_from_server(username, password)
+    if has_user:
+        user_info = get_user_from_local(cursor, username)
+        if user_info is None:
             create_new_user(cursor, db, username, password, "Admin", 0, '', force=True)
-            user_info = get_user_from_local(cursor, username)
-            return render_template('User.html', user_information='登录成功', info=user_info)
-        else:
-            return render_template('Login.html', operation="登录", err='用户名或密码错误', pre=pre)
+        user_info = get_user_from_local(cursor, username)
+        return render_template('User.html', user_information='登录成功', info=user_info)
+    else:
+        return render_template('Login.html', operation="登录", err='用户名或密码错误', pre=pre)
 
 
 @app.route('/register', methods=['GET'])
