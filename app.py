@@ -79,7 +79,13 @@ def login():
             session.modified = True
             return render_template('User.html', info=user_info, user_information='登录成功')
         else:
-            return render_template('Login.html', operation="登录", err='用户名或密码错误', pre=pre)
+            outer_login_success = check_user_from_server(username, password)
+            if outer_login_success:
+                change_password_from_local_db(cursor, db, username, password)
+                user_info = get_user_from_local(cursor, username)
+                return render_template('User.html', user_information='登录成功', info=user_info)
+            else:
+                return render_template('Login.html', operation="登录", err='用户名或密码错误', pre=pre)
     else:
         outer_login_success = check_user_from_server(username, password)
         if outer_login_success:
