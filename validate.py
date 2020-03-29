@@ -31,7 +31,7 @@ def pre_validate_request(operation, request, session):
         'original_password': r"^[1-9a-i]{6,16}$",
         'invite_code': r'^[1-9a-zA-Z]{6}$',
         'captcha': f'^[{captcha_letters}]{{4}}$',
-        'phone': r'^1([34578])\d{9}$',
+        'phone': r'^1([345789])\d{9}$',
         'code': r'^[0-9]{6}$'
     }
     error = None
@@ -66,6 +66,6 @@ def pre_validate_sms_request(request, session):
         return ValidateError.bad_cookie
     if session.get('captcha') != captcha:
         return ValidateError.captcha_error
-    if not re.match(r'^1([34578])\d{9}$', phone):
+    if not re.match(r'^1([345789])\d{9}$', phone):
         return ValidateError.bad_string
     return
