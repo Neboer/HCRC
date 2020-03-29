@@ -4,8 +4,6 @@ import string
 import struct
 from datetime import datetime
 
-from communication import give_kit
-from config import award
 from player import Player
 
 
@@ -104,11 +102,11 @@ def get_ip_sms_time_from_db(cursor, ip_addr_string):
         return False
 
 
-def give_kit_to_invitor(cursor, username):
+def get_player_count_user_invited(cursor, username):
     cursor.execute('select count(*) from new_players where invitor_username = ?', (username,))
     result = cursor.fetchone()
-    award_name = award[int(result[0])]
-    give_kit(username, award_name)
+    return int(result[0])
+
 
 
 def is_phone_exist(cursor, phone):

@@ -121,7 +121,9 @@ def register():
             create_new_user(cursor, db, username, password, invitor, invitation_code, phone)
             player_already_added = get_user_from_local(cursor, username)
             session['username'] = username
-            give_kit_to_invitor(cursor, invitor)
+            player_count = get_player_count_user_invited(cursor, invitor)
+            award_name = award[player_count]
+            give_kit(username, award_name)
             return render_template('User.html', info=player_already_added, user_information='注册成功')
         else:
             return render_template('Register.html', err="服务器错误", pre=pre)
@@ -156,8 +158,10 @@ def change_password():
         # 其实这个不太可能了。但是……万一呢？
         result = change_user_password_from_server(username, original_password, new_password)
         if result:
-            create_new_user(cursor, db, username, new_password, "Admin", 0, force=True)
+            create_new_user(cursor, db, username, new_password, "Admin", 0, 'unknown', force=True)
             user = get_user_from_local(cursor, username)
+            session['username'] = username
+            session.modified = True
             return render_template('User.html', user_information="修改密码成功", info=user)
         else:
             return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误", pre=pre)
@@ -165,6 +169,8 @@ def change_password():
         if change_user_password_from_server(username, original_password, new_password):
             change_password_from_local_db(cursor, db, username, new_password)
             user = get_user_from_local(cursor, username)
+            session['username'] = username
+            session.modified = True
             return render_template('User.html', user_information="修改密码成功", info=user)
     return render_template('Login.html', operation="修改密码", user_change_password=username, err="密码错误", pre=pre)
 
